@@ -36,7 +36,7 @@ module.exports = simpleEvents({
 
     const {emitter, type, f} = setupRemoveListenerTest(1);
     let listeners;
-    
+
     listeners = emitter.listeners(type);
     test.equal(listeners.length, 1, 'should only have 1');
 
@@ -75,7 +75,9 @@ module.exports = simpleEvents({
     test.equal(listeners.length, 3, 'should only have 3');
 
     //remove
+
     emitter.removeListener(type, f);
+
     listeners = emitter.listeners(type);
     test.equal(listeners.length, 2, 'should be 2');
 

@@ -83,7 +83,7 @@ server.emit('foo.bar'); // foo.bar
 server.emit(['foo', 'bar']); // foo.bar
 
 server.emit(Symbol()); // Symbol()
-server.emit(['foo', Symbol()]); // ['foo', Symbol())
+server.emit(['foo', Symbol()]); // ['foo', Symbol()]
 ```
 **Note**: Generally this.event is normalized to a string ('event', 'event.test'),
 except the cases when event is a symbol or namespace contains a symbol. 
@@ -118,7 +118,7 @@ $ npm install --save eventemitter2
 ### instance:
 - [emit(event: event | eventNS, ...values: any[]): boolean](#emitteremitevent-arg1-arg2-);
 
-- [emitAsync(event: event | eventNS, ...values: any[]): Promise<any[]>](#emitteremitasyncevent-arg1-arg2-)
+- [emitAsync(event: event | eventNS, ...values: any[]): Promise<false>|Promise<any[]>](#emitteremitasyncevent-arg1-arg2-)
 
 - [addListener(event: event | eventNS, listener: Listener): this](#emitteraddlistenerevent-listener)
 
@@ -405,8 +405,10 @@ name in order with the list of arguments.
 
 ### emitter.emitAsync(event | eventNS, [arg1], [arg2], [...])
 
-Return the results of the listeners via [Promise.all](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Promise/all).
+Return the results of the listeners (including [`Any`](#emitteronanylistener) listeners) via [Promise.all](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Promise/all).
 Only this method doesn't work [IE](http://caniuse.com/#search=promise).
+
+**Note**: If no listeners were actually called it returns a Promise resolved with `false`.
 
 ```javascript
 emitter.on('get',function(i) {
@@ -436,6 +438,17 @@ emitter.emitAsync('get',0)
   console.log(results); // [3,2,1,0,undefined]
 });
 ```
+
+````javascript
+emitter.emitAsync('eventWithNoListeners').then(function(result){
+    if(result===false){
+        console.log('no listeners were called');
+    } else {
+        // if there are listeners, the result will be an array of their return values
+        console.log(result); // []
+    } 
+});
+````
 
 ### emitter.waitFor(event | eventNS, [options])
 ### emitter.waitFor(event | eventNS, [timeout])

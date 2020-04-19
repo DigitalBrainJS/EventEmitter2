@@ -59,10 +59,10 @@ module.exports = basicEvents({
     var emitterDefault = new EventEmitter2({
     });
 
-    test.ok(emitter.listenerTree, 'listenerTree should exist');
-    test.equal(typeof emitter.listenerTree, 'object', 'listenerTree should be an Object');
+    test.ok(emitter.hasOwnProperty('_listenerTree'), 'listenerTree should exist');
+    test.equal(emitter._listenerTree, null, 'listenerTree should be null');
 
-    test.ok(!emitterDefault.listenerTree, 'listenerTree should not exist');
+    test.ok(!emitterDefault.hasOwnProperty('_listenerTree'), 'listenerTree should not exist');
     // check the tree to be empty?
 
     test.expect(3);

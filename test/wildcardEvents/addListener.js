@@ -323,7 +323,6 @@ module.exports = simpleEvents({
     emitter.on('foo.*', function () {
       test.ok(true, 'The event was raised');
     });
-
     emitter.onAny(function () {
       test.ok(true, 'The event was raised');
     });

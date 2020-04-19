@@ -108,7 +108,7 @@ export interface GeneralEventEmitter{
 export declare class EventEmitter2 {
     constructor(options?: ConstructorOptions)
     emit(event: event | eventNS, ...values: any[]): boolean;
-    emitAsync(event: event | eventNS, ...values: any[]): Promise<any[]>;
+    emitAsync(event: event | eventNS, ...values: any[]): Promise<false>|Promise<any[]>;
     addListener(event: event | eventNS, listener: Listener): this;
     on(event: event | eventNS, listener: Listener): this;
     prependListener(event: event | eventNS, listener: Listener): this;
@@ -137,7 +137,7 @@ export declare class EventEmitter2 {
     listenTo(target: GeneralEventEmitter, events: event | eventNS, options?: ListenToOptions): this;
     listenTo(target: GeneralEventEmitter, events: (event | eventNS)[], options?: ListenToOptions): this;
     listenTo(target: GeneralEventEmitter, events: Object, options?: ListenToOptions): this;
-    stopListening(target?: GeneralEventEmitter, event | eventNS?: String): Boolean;
+    stopListening(target?: GeneralEventEmitter, event?: event | eventNS): Boolean;
     hasListeners(event?: String): Boolean
     static once(emitter: EventEmitter2, event: event | eventNS, options?: OnceOptions): CancelablePromise<any[]>;
     static defaultMaxListeners: number;

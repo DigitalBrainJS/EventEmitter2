@@ -11,6 +11,9 @@ var emitter2 = new EventEmitter2;
 var EventEmitter3 = require('events').EventEmitter;
 var emitter3 = new EventEmitter3;
 
+var EventEmitter4 = require('../../lib/eventemitter2').EventEmitter2;
+var emitter4 = new EventEmitter4;
+
 suite
 
   .add('EventEmitterHeatUp', function() {
@@ -20,6 +23,7 @@ suite
       emitter3.removeAllListeners('test3');
 
   })
+
   .add('EventEmitter', function() {
 
     emitter.on('test1', function () { 1==1; });
@@ -42,6 +46,24 @@ suite
     emitter2.removeAllListeners('test2.foo');
 
   })
+
+    .add('EventEmitter2(append 10 listener & remove all)', function() {
+
+      emitter2.on('test2', function () { 1==1; });
+      emitter2.on('test2', function () { 1==1; });
+      emitter2.on('test2', function () { 1==1; });
+      emitter2.on('test2', function () { 1==1; });
+      emitter2.on('test2', function () { 1==1; });
+      emitter2.on('test2', function () { 1==1; });
+      emitter2.on('test2', function () { 1==1; });
+      emitter2.on('test2', function () { 1==1; });
+      emitter2.on('test2', function () { 1==1; });
+      emitter2.on('test2', function () { 1==1; });
+      //emitter2.emit('test2');
+      emitter2._events= null;
+      //emitter2.removeAllListeners('test2');
+
+    })
 
   .on('cycle', function(event, bench) {
     console.log(String(event.target));

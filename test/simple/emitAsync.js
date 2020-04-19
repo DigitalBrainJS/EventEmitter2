@@ -107,5 +107,5 @@ module.exports = simpleEvents({
       test.equal(results[0], 2)
       test.done();
     });
-  },
+  }
 });

@@ -129,15 +129,17 @@ module.exports = simpleEvents({
     var eventBeingTestedFor, expectedArgument;
     var f = function (event, argument) {
       test.ok(true, 'the event was fired');
-      test.ok(eventBeingTestedFor === event, 'the event is '+event)
-      test.ok(expectedArgument === argument, 'the argument is '+argument)
+      test.ok(eventBeingTestedFor === event, 'the event is '+event);
+      test.ok(expectedArgument === argument, 'the argument is '+argument);
     };
 
     emitter.onAny(f);
     emitter.emit(eventBeingTestedFor = 'test23.ns5.ns5', expectedArgument = 'someData'); //1
     emitter.offAny(f);
-    expectedArgument = undefined
+
+    expectedArgument = undefined;
     emitter.emit(eventBeingTestedFor = 'test21'); //0
+
     emitter.onAny(f);
     emitter.onAny(f);
     emitter.emit(eventBeingTestedFor = 'test23.ns5.ns5', expectedArgument = 'someData'); //3

@@ -87,7 +87,6 @@ module.exports = simpleEvents({
     });
 
     var type = 'test1.foo.bar';
-    var count = 0;
 
     function f1(event) {
       "event A";

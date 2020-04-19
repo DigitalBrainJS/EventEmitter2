@@ -9,24 +9,6 @@ else {
   EventEmitter2 = window.EventEmitter2;
 }
 
-function setHelper (emitter, test, testName){
-  var eventNames = [
-    testName,
-    testName + '.*',
-    testName + '.ns1',
-    testName + '.ns1.ns2',
-    testName + '.ns2.*'
-  ];
-
-  for (var i = 0; i < eventNames.length; i++) {
-    emitter.on(eventNames[i], function () {
-        test.ok(true, eventNames[i] + 'has fired');
-    });
-  }
-
-  return eventNames;
-};
-
 module.exports = basicEvents({
 
   '1. An event can be namespaced.': function (test) {
@@ -205,13 +187,12 @@ module.exports = basicEvents({
     });
 
     var fn = function (event, foo, bar) {
-      test.equal(this.event, 'test23.ns5.ns5')
-      test.equal(event, 'test23.ns5.ns5')
+      test.equal(this.event, 'test23.ns5.ns5');
+      test.equal(event, 'test23.ns5.ns5');
       test.equal(foo, 'foo');
       test.equal(bar, 1);
       test.ok(true, 'raised test23.ns5.ns5');
-    }
-
+    };
     emitter.onAny(fn);
     emitter.emit('test23.ns5.ns5', 'foo', 1);
     test.expect(5);
@@ -233,7 +214,7 @@ module.exports = basicEvents({
       test.equal(bar, 1);
       test.equal(baz, 'baz');
       test.ok(true, 'raised test23.ns5.ns5');
-    }
+    };
 
     emitter.onAny(fn);
     emitter.emit('test23.ns5.ns5', 'foo', 1, 'baz');
@@ -262,7 +243,7 @@ module.exports = basicEvents({
 
     var listeners = emitter.listeners(type);
     test.equal(listeners.length, 15, 'should have 15');
-    test.ok(!(emitter.listenerTree[ 'test29' ]['*']._listeners.warned), 'should not have been set');
+    test.ok(!(emitter._listenerTree[ 'test29' ]['*']._listeners.warned), 'should not have been set');
 
     test.expect(2);
     test.done();

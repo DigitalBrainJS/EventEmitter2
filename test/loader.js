@@ -37,11 +37,13 @@ function importTests(root, filter) {
                     if (!done) {
                         return test.call(this);
                     }
-                    let count, expectedCount;
+                    let count= 0, expectedCount;
+                    const tests= [];
 
                     function wrap(fn) {
                         return function () {
                             count++;
+                            tests.push([`       -${fn.name}(${Array.from(arguments).join(', ')})`]);
                             return fn.apply(null, arguments);
                         }
                     }
@@ -50,8 +52,14 @@ function importTests(root, filter) {
                         return done.apply(this, arguments);
                     }, {
                         done: function (err) {
-                            if (expectedCount !== undefined && count < expectedCount) {
-                                throw Error(`${count}/${expectedCount} assertions was done`);
+                            if (expectedCount !== undefined) {
+                                if(count < expectedCount) {
+                                    throw Error(`${count}/${expectedCount} assertions were done ${
+                                        count ? ':\n' + tests.join('\n') : ''
+                                    }`);
+                                } else if (count > expectedCount) {
+                                    throw Error(`Expected ${expectedCount} assertions, but ${count} were done`)
+                                }
                             }
                             err ? done(err) : done();
                         },

@@ -26,9 +26,9 @@ module.exports = simpleEvents({
 
     test.equal(emitter._maxListeners, config.maxListeners, 'should be ' + config.maxListeners);
 
-    test.equal(emitter._conf.maxListeners, config.maxListeners, 'should be ' + config.maxListeners);
-    test.equal(emitter._conf.delimiter, config.delimiter, 'should be ' + config.delimiter);
-    test.equal(emitter._conf.wildcard, config.wildcard, 'should be ' + config.wildcard);
+    test.equal(emitter.maxListeners, config.maxListeners, 'should be ' + config.maxListeners);
+    test.equal(emitter.delimiter, config.delimiter, 'should be ' + config.delimiter);
+    test.equal(emitter.wildcard, config.wildcard, 'should be ' + config.wildcard);
 
     test.expect(4);
     test.done();
@@ -46,9 +46,7 @@ module.exports = simpleEvents({
 
     test.equal(emitter._maxListeners, amount, 'should be ' + amount);
 
-    test.equal(emitter._conf.maxListeners, amount, 'should be ' + amount);
-
-    test.expect(2);
+    test.expect(1);
     test.done();
   },
 

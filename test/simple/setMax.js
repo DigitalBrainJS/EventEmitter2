@@ -123,7 +123,7 @@ module.exports = simpleEvents({
     var type = 'ns1';
 
     emitter.setMaxListeners(1);
-
+    debugger;
     emitter.on(type, function () {});
     emitter.on(type, function () {});
 
