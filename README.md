@@ -42,39 +42,25 @@ Fastest is EventEmitter2
 var EventEmitter2 = require('eventemitter2').EventEmitter2;
 var server = new EventEmitter2({
 
-  //
-  // set this to `true` to use wildcards. It defaults to `false`.
-  //
-  wildcard: true,
+  // set this to `true` to use wildcards
+  wildcard: false,
 
-  //
-  // the delimiter used to segment namespaces, defaults to `.`.
-  //
-  delimiter: '::', 
-  
-  //
-  // set this to `true` if you want to emit the newListener event. The default value is `false`.
-  //
+  // the delimiter used to segment namespaces
+  delimiter: '.', 
+
+  // set this to `true` if you want to emit the newListener event
   newListener: false, 
-  
-  //
-  // set this to `true` if you want to emit the removeListener event. The default value is `false`.
-  //
+
+  // set this to `true` if you want to emit the removeListener event
   removeListener: false, 
 
-  //
-  // the maximum amount of listeners that can be assigned to an event, default 10.
-  //
-  maxListeners: 20,
-  
-  //
-  // show event name in memory leak message when more than maximum amount of listeners is assigned, default false
-  //
+  // the maximum amount of listeners that can be assigned to an event
+  maxListeners: 10,
+
+  // show event name in memory leak message when more than maximum amount of listeners is assigned
   verboseMemoryLeak: false,
 
-  //
   // disable throwing uncaughtException if an error event is emitted and it has no listeners
-  //
   ignoreErrors: false
 });
 ```
@@ -82,6 +68,11 @@ var server = new EventEmitter2({
  - Getting the actual event that fired.
 
 ```javascript
+var EventEmitter2 = require('eventemitter2');
+var server = new EventEmitter2({
+    wildcard: true
+});
+
 server.on('foo.*', function() {
   console.log(this.event); 
 });
@@ -89,8 +80,7 @@ server.on('foo.*', function() {
 server.emit('foo.bar'); // foo.bar
 server.emit(['foo', 'bar']); // foo.bar
 
-server.emit(Symbol()); // Symbol()
-server.emit(['foo', Symbol()]); // ['foo', Symbol())
+server.emit(['foo', Symbol()]); // [ 'foo', Symbol() ]
 ```
 **Note**: Generally this.event is normalized to a string ('event', 'event.test'),
 except the cases when event is a symbol or namespace contains a symbol. 
