@@ -13,6 +13,7 @@ EventEmitter2 is an implementation of the EventEmitter module found in Node.js. 
 ### FEATURES
  - Namespaces/Wildcards
  - Times To Listen (TTL), extends the `once` concept with [`many`](#emittermanyevent-timestolisten-listener)
+ - [Async listeners](#emitteronevent-listener-options-objectboolean) (using setImmediate|setTimeout|nextTick) with promise|async function support
  - The [emitAsync](#emitteremitasyncevent-arg1-arg2-) method to return the results of the listeners via Promise.all
  - Feature-rich [waitFor](#emitterwaitforevent-options) method to wait for events using promises
  - [listenTo](#listentotargetemitter-events-event--eventns-options) & [stopListening](#stoplisteningtarget-object-event--eventns-string-boolean) methods
@@ -24,13 +25,14 @@ EventEmitter2 is an implementation of the EventEmitter module found in Node.js. 
 ```
 Platform: win32, x64, 15267MB
 Node version: v13.11.0
-Cpu: 4 x AMD Ryzen 3 2200U with Radeon Vega Mobile Gfx @ 2495MHz
+CPU: 4 x AMD Ryzen 3 2200U with Radeon Vega Mobile Gfx @ 2495MHz
 ----------------------------------------------------------------
-EventEmitterHeatUp x 3,017,814 ops/sec ±3.37% (68 runs sampled)
-EventEmitter x 3,357,197 ops/sec ±4.66% (62 runs sampled)
-EventEmitter2 x 11,378,225 ops/sec ±3.99% (62 runs sampled)
-EventEmitter2 (wild) x 4,799,373 ops/sec ±4.01% (66 runs sampled)
-EventEmitter3 x 10,007,114 ops/sec ±3.94% (69 runs sampled)
+EventEmitterHeatUp x 3,167,076 ops/sec ±3.17% (59 runs sampled)
+EventEmitter x 3,190,460 ops/sec ±3.20% (66 runs sampled)
+EventEmitter2 x 11,278,456 ops/sec ±4.26% (60 runs sampled)
+EventEmitter2 (wild) x 4,620,369 ops/sec ±4.46% (61 runs sampled)
+EventEmitter3 x 10,309,717 ops/sec ±3.89% (64 runs sampled)
+
 Fastest is EventEmitter2
 ```
 
@@ -105,31 +107,35 @@ server.many(['foo', 'bar', 'bazz'], 4, function() {
 # Installing
 
 ```console
-$ npm install --save eventemitter2
+$ npm install eventemitter2
 ```
 
 # API
 
-## class EventEmitter2
+### Types definition
+- `Event`: string | symbol
+- `EventNS`: string | Event []
+
+## Class EventEmitter2
 
 ### instance:
 - [emit(event: event | eventNS, ...values: any[]): boolean](#emitteremitevent-arg1-arg2-);
 
 - [emitAsync(event: event | eventNS, ...values: any[]): Promise<any[]>](#emitteremitasyncevent-arg1-arg2-)
 
-- [addListener(event: event | eventNS, listener: Listener): this](#emitteraddlistenerevent-listener)
+- [addListener(event: event | eventNS, listener: Listener, boolean|options?: object): this](#emitteraddlistenerevent-listener)
 
-- [on(event: event | eventNS, listener: Listener): this](#emitteraddlistenerevent-listener)
+- [on(event: event | eventNS, listener: Listener, boolean|options?: object): this](#emitteraddlistenerevent-listener)
 
-- [prependListener(event: event | eventNS, listener: Listener): this](#emitterprependlistenerevent-listener)
+- [prependListener(event: event | eventNS, listener: Listener, boolean|options?: object): this](#emitterprependlistenerevent-listener)
 
-- [once(event: event | eventNS, listener: Listener): this](#emitteronceevent-listener)
+- [once(event: event | eventNS, listener: Listener, boolean|options?: object): this](#emitteronceevent-listener)
 
-- [prependOnceListener(event: event | eventNS, listener: Listener): this](#emitterprependoncelistenerevent-listener)
+- [prependOnceListener(event: event | eventNS, listener: Listener, boolean|options?: object): this](#emitterprependoncelistenerevent-listener)
 
-- [many(event: event | eventNS, timesToListen: number, listener: Listener): this](#emittermanyevent-timestolisten-listener)
+- [many(event: event | eventNS, timesToListen: number, listener: Listener, boolean|options?: object): this](#emittermanyevent-timestolisten-listener)
 
-- [prependMany(event: event | eventNS, timesToListen: number, listener: Listener): this](#emitterprependanylistener)
+- [prependMany(event: event | eventNS, timesToListen: number, listener: Listener, boolean|options?: object): this](#emitterprependanylistener)
 
 - [onAny(listener: EventAndListener): this](#emitteronanylistener)
 
@@ -174,9 +180,6 @@ $ npm install --save eventemitter2
 - [static once(emitter: EventEmitter2, event: string | symbol, options?: OnceOptions): CancelablePromise<any[]>](#eventemitter2onceemitter-name-options)
 
 - [static defaultMaxListeners: number](#eventemitter2defaultmaxlisteners)
-### inner
-- `Event`: string | symbol
-- `EventNS`: Event | Event []
 
 The `event` argument specified in the API declaration can be a string or symbol for a simple event emitter
 and a string|symbol|Array(string|symbol) in a case of a wildcard emitter; 
@@ -230,8 +233,8 @@ emitter.emit(['foo', Symbol(), 'baz');
 On the other hand, if the single-wildcard event name was passed to the on method, the callback would only observe the second of these events.
 
 
-### emitter.addListener(event, listener)
-### emitter.on(event, listener)
+### emitter.addListener(event, listener, options?: object|boolean)
+### emitter.on(event, listener, options?: object|boolean)
 
 Adds a listener to the end of the listeners array for the specified event.
 
@@ -240,14 +243,81 @@ server.on('data', function(value1, value2, value3, ...) {
   console.log('The event was raised!');
 });
 ```
-
 ```javascript
 server.on('data', function(value) {
   console.log('The event was raised!');
 });
 ```
 
-### emitter.prependListener(event, listener)
+**Options:**
+
+- `async:boolean= false`- invoke the listener in async mode using setImmediate (fallback to setTimeout if not available)
+or process.nextTick depending on the `nextTick` option.
+
+- `nextTick:boolean= false`- use process.nextTick instead of setImmediate to invoke the listener asynchronously. 
+
+- `promisify:boolean= false`- additionally wraps the listener to a Promise for later invocation using `emitAsync` method.
+This option will be activated by default if its value is `undefined`
+and the listener function is an `asynchronous function` (whose constructor name is `AsyncFunction`). 
+
+**Note:** If the options argument is `true` it will be considered as `{promisify: true}`
+
+**Note:** If the options argument is `false` it will be considered as `{async: true}`
+
+```javascript
+var EventEmitter2= require('eventemitter2');
+var emitter= new EventEmitter2();
+
+emitter.on('event', function(){
+    console.log('The event was raised!');
+}, {async: true});
+
+emitter.emit('event');
+console.log('emitted');
+```
+Since the `async` option was set the output from the code above is as follows:
+````
+emitted
+The event was raised!
+````
+
+If the listener is an async function or function which returns a promise, use the `promisify` option as follows:
+
+```javascript
+var EventEmitter2= require('eventemitter2');
+var emitter= new EventEmitter2();
+
+emitter.on('event', function(){
+    console.log('The event was raised!');
+    return new Promise(function(resolve){
+       console.log('listener resolved');
+       setTimeout(resolve, 1000);
+    });
+}, {promisify: true});
+
+emitter.emitAsync('event').then(function(){
+    console.log('all listeners were resolved!');
+});
+
+console.log('emitted');
+````
+Output:
+````
+emitted
+The event was raised!
+listener resolved
+all listeners were resolved!
+````
+If the `promisify` option is false (default value) the output of the same code is as follows:
+````
+The event was raised!
+listener resolved
+emitted
+all listeners were resolved!
+````
+
+
+### emitter.prependListener(event, listener, options?)
 
 Adds a listener to the beginning of the listeners array for the specified event.
 
@@ -257,6 +327,9 @@ server.prependListener('data', function(value1, value2, value3, ...) {
 });
 ```
 
+**options:**
+
+`options?`: See the [addListener options](#emitteronevent-listener-options-objectboolean)
 
 ### emitter.onAny(listener)
 
@@ -288,7 +361,7 @@ server.offAny(function(value) {
 });
 ```
 
-#### emitter.once(event | eventNS, listener)
+#### emitter.once(event | eventNS, listener, options?)
 
 Adds a **one time** listener for the event. The listener is invoked 
 only the first time the event is fired, after which it is removed.
@@ -299,7 +372,11 @@ server.once('get', function (value) {
 });
 ```
 
-#### emitter.prependOnceListener(event | eventNS, listener)
+**options:**
+
+`options?`: See the [addListener options](#emitteronevent-listener-options-objectboolean)
+
+#### emitter.prependOnceListener(event | eventNS, listener, options?)
 
 Adds a **one time** listener for the event. The listener is invoked 
 only the first time the event is fired, after which it is removed.
@@ -311,7 +388,11 @@ server.prependOnceListener('get', function (value) {
 });
 ```
 
-### emitter.many(event | eventNS, timesToListen, listener)
+**options:**
+
+`options?`: See the [addListener options](#emitteronevent-listener-options-objectboolean)
+
+### emitter.many(event | eventNS, timesToListen, listener, options?)
 
 Adds a listener that will execute **n times** for the event before being
 removed. The listener is invoked only the first **n times** the event is 
@@ -323,7 +404,11 @@ server.many('get', 4, function (value) {
 });
 ```
 
-### emitter.prependMany(event | eventNS, timesToListen, listener)
+**options:**
+
+`options?`: See the [addListener options](#emitteronevent-listener-options-objectboolean)
+
+### emitter.prependMany(event | eventNS, timesToListen, listener, options?)
 
 Adds a listener that will execute **n times** for the event before being
 removed. The listener is invoked only the first **n times** the event is 
@@ -336,7 +421,9 @@ server.many('get', 4, function (value) {
 });
 ```
 
+**options:**
 
+`options?`: See the [addListener options](#emitteronevent-listener-options-objectboolean)
 
 ### emitter.removeListener(event | eventNS, listener)
 ### emitter.off(event | eventNS, listener)
@@ -497,6 +584,79 @@ emitter.on('bar', () => {});
 console.log(emitter.eventNames());
 // Prints: [ 'foo', 'bar' ]
 ```
+### listenTo(targetEmitter, events: event | eventNS, options?)
+
+### listenTo(targetEmitter, events: (event | eventNS)[], options?)
+
+### listenTo(targetEmitter, events: Object<event | eventNS, Function>, options?)
+
+Listens to the events emitted by an external emitter and propagate them through itself.
+The target object could be of any type that implements methods for subscribing and unsubscribing to its events. 
+By default this method attempts to use `addListener`/`removeListener`, `on`/`off` and `addEventListener`/`removeEventListener` pairs,
+but you able to define own hooks `on(event, handler)` and `off(event, handler)` in the options object to use
+custom subscription API. In these hooks `this` refers to the target object.
+
+The options object has the following interface:
+- `on(event, handler): void`
+- `off(event, handler): void`
+- `reducer: (Function) | (Object<Function>): Boolean`
+
+In case you selected the `newListener` and `removeListener` options when creating the emitter, 
+the subscription to the events of the target object will be conditional, 
+depending on whether there are listeners in the emitter that could listen them.
+
+````javascript
+var EventEmitter2 = require('EventEmitter2');
+var http = require('http');
+
+var server = http.createServer(function(request, response){
+    console.log(request.url);
+    response.end('Hello Node.js Server!')
+}).listen(3000);
+
+server.on('connection', function(req, socket, head){
+   console.log('connect');
+});
+
+// activate the ability to attach listeners on demand 
+var emitter= new EventEmitter2({
+    newListener: true,
+    removeListener: true
+});
+
+emitter.listenTo(server, {
+    'connection': 'localConnection',
+    'close': 'close'
+}, {
+    reducers: {
+        connection: function(event){
+            console.log('event name:' + event.name); //'localConnection'
+            console.log('original event name:' + event.original); //'connection'
+            return event.data[0].remoteAddress==='::1';
+        }
+    }
+});
+
+emitter.on('localConnection', function(socket){
+   console.log('local connection', socket.remoteAddress);
+});
+
+setTimeout(function(){
+    emitter.stopListening(server);
+}, 30000);
+````
+
+### stopListening(target?: Object, event: event | eventNS): Boolean
+
+Stops listening the targets. Returns true if some listener was removed.
+
+### hasListeners(event | eventNS?:String):Boolean
+
+Checks whether emitter has any listeners.
+
+### emitter.listeners(event | eventNS)
+
+Returns the array of listeners for the event named eventName.
 
 ### EventEmitter2.once(emitter, event | eventNS, [options])
 Creates a cancellable Promise that is fulfilled when the EventEmitter emits the given event or that is rejected
@@ -571,80 +731,6 @@ promise.cancel();
 
 emitter.emit('event', 'never handled');
 ````
-
-### listenTo(targetEmitter, events: event | eventNS, options?)
-
-### listenTo(targetEmitter, events: (event | eventNS)[], options?)
-
-### listenTo(targetEmitter, events: Object<event | eventNS, Function>, options?)
-
-Listens to the events emitted by an external emitter and propagate them through itself.
-The target object could be of any type that implements methods for subscribing and unsubscribing to its events. 
-By default this method attempts to use `addListener`/`removeListener`, `on`/`off` and `addEventListener`/`removeEventListener` pairs,
-but you able to define own hooks `on(event, handler)` and `off(event, handler)` in the options object to use
-custom subscription API. In these hooks `this` refers to the target object.
-
-The options object has the following interface:
-- `on(event, handler): void`
-- `off(event, handler): void`
-- `reducer: (Function) | (Object<Function>): Boolean`
-
-In case you selected the `newListener` and `removeListener` options when creating the emitter, 
-the subscription to the events of the target object will be conditional, 
-depending on whether there are listeners in the emitter that could listen them.
-
-````javascript
-var EventEmitter2 = require('EventEmitter2');
-var http = require('http');
-
-var server = http.createServer(function(request, response){
-    console.log(request.url);
-    response.end('Hello Node.js Server!')
-}).listen(3000);
-
-server.on('connection', function(req, socket, head){
-   console.log('connect');
-});
-
-// activate the ability to attach listeners on demand 
-var emitter= new EventEmitter2({
-    newListener: true,
-    removeListener: true
-});
-
-emitter.listenTo(server, {
-    'connection': 'localConnection',
-    'close': 'close'
-}, {
-    reducers: {
-        connection: function(event){
-            console.log('event name:' + event.name); //'localConnection'
-            console.log('original event name:' + event.original); //'connection'
-            return event.data[0].remoteAddress==='::1';
-        }
-    }
-});
-
-emitter.on('localConnection', function(socket){
-   console.log('local connection', socket.remoteAddress);
-});
-
-setTimeout(function(){
-    emitter.stopListening(server);
-}, 30000);
-````
-
-### stopListening(target?: Object, event: event | eventNS): Boolean
-
-Stops listening the targets. Returns true if some listener was removed.
-
-### hasListeners(event | eventNS?:String):Boolean
-
-Checks whether emitter has any listeners.
-
-### emitter.listeners(event | eventNS)
-
-Returns the array of listeners for the event named eventName.
 
 ### EventEmitter2.defaultMaxListeners
 
