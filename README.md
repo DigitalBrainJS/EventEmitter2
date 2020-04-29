@@ -18,7 +18,7 @@ EventEmitter2 is an implementation of the EventEmitter module found in Node.js. 
  - Feature-rich [waitFor](#emitterwaitforevent-options) method to wait for events using promises
  - [listenTo](#listentotargetemitter-events-event--eventns-options) & [stopListening](#stoplisteningtarget-object-event--eventns-string-boolean) methods
  for listening to an external event emitter and propagate its events through itself using optional reducers/filters 
- - Extended version of the [events.once](#eventemitter2onceemitter-name-options) method from the [node events API](https://nodejs.org/api/events.html#events_events_once_emitter_name)
+ - Extended version of the [events.once](#eventemitter2onceemitter-event--eventns-options) method from the [node events API](https://nodejs.org/api/events.html#events_events_once_emitter_name)
  - Browser & Workers environment compatibility
  - Demonstrates good performance in benchmarks
 
@@ -119,21 +119,21 @@ $ npm install eventemitter2
 ## Class EventEmitter2
 
 ### instance:
-- [emit(event: event | eventNS, ...values: any[]): boolean](#emitteremitevent-arg1-arg2-);
+- [emit(event: event | eventNS, ...values: any[]): boolean](#emitteremitevent--eventns-arg1-arg2-);
 
-- [emitAsync(event: event | eventNS, ...values: any[]): Promise<any[]>](#emitteremitasyncevent-arg1-arg2-)
+- [emitAsync(event: event | eventNS, ...values: any[]): Promise<any[]>](#emitteremitasyncevent--eventns-arg1-arg2-)
 
-- [addListener(event: event | eventNS, listener: Listener, boolean|options?: object): this](#emitteraddlistenerevent-listener)
+- [addListener(event: event | eventNS, listener: Listener, boolean|options?: object): this](#emitteraddlistenerevent-listener-options-objectboolean)
 
-- [on(event: event | eventNS, listener: Listener, boolean|options?: object): this](#emitteraddlistenerevent-listener)
+- [on(event: event | eventNS, listener: Listener, boolean|options?: object): this](#emitteraddlistenerevent-listener-options-objectboolean)
 
-- [prependListener(event: event | eventNS, listener: Listener, boolean|options?: object): this](#emitterprependlistenerevent-listener)
+- [prependListener(event: event | eventNS, listener: Listener, boolean|options?: object): this](#emitterprependlistenerevent-listener-options)
 
-- [once(event: event | eventNS, listener: Listener, boolean|options?: object): this](#emitteronceevent-listener)
+- [once(event: event | eventNS, listener: Listener, boolean|options?: object): this](#emitteronceevent--eventns-listener-options)
 
-- [prependOnceListener(event: event | eventNS, listener: Listener, boolean|options?: object): this](#emitterprependoncelistenerevent-listener)
+- [prependOnceListener(event: event | eventNS, listener: Listener, boolean|options?: object): this](#emitterprependoncelistenerevent--eventns-listener-options)
 
-- [many(event: event | eventNS, timesToListen: number, listener: Listener, boolean|options?: object): this](#emittermanyevent-timestolisten-listener)
+- [many(event: event | eventNS, timesToListen: number, listener: Listener, boolean|options?: object): this](#emittermanyevent--eventns-timestolisten-listener-options)
 
 - [prependMany(event: event | eventNS, timesToListen: number, listener: Listener, boolean|options?: object): this](#emitterprependanylistener)
 
@@ -143,11 +143,11 @@ $ npm install eventemitter2
 
 - [offAny(listener: Listener): this](#emitteroffanylistener)
 
-- [removeListener(event: event | eventNS, listener: Listener): this](#emitterremovelistenerevent-listener)
+- [removeListener(event: event | eventNS, listener: Listener): this](#emitterremovelistenerevent--eventns-listener)
 
-- [off(event: event | eventNS, listener: Listener): this](#emitteroffevent-listener)
+- [off(event: event | eventNS, listener: Listener): this](#emitteroffevent--eventns-listener)
 
-- [removeAllListeners(event?: event | eventNS): this](#emitterremovealllistenersevent)
+- [removeAllListeners(event?: event | eventNS): this](#emitterremovealllistenersevent--eventns)
 
 - [setMaxListeners(n: number): void](#emittersetmaxlistenersn)
 
@@ -155,29 +155,29 @@ $ npm install eventemitter2
 
 - [eventNames(): string[]](#emittereventnames)
 
-- [listeners(event: event | eventNS): Listener[]](#emitterlistenersevent)
+- [listeners(event: event | eventNS): Listener[]](#emitterlistenersevent--eventns)
 
 - [listenersAny(): Listener[]](#emitterlistenersany)
 
-- [waitFor(event: event | eventNS, timeout?: number): CancelablePromise<any[]>](#emitterwaitforevent-timeout)
+- [waitFor(event: event | eventNS, timeout?: number): CancelablePromise<any[]>](#emitterwaitforevent--eventns-timeout)
 
-- [waitFor(event: event | eventNS, filter?: WaitForFilter): CancelablePromise<any[]>](#emitterwaitforevent-filter)
+- [waitFor(event: event | eventNS, filter?: WaitForFilter): CancelablePromise<any[]>](#emitterwaitforevent--eventns-filter)
 
-- [waitFor(event: event | eventNS, options?: WaitForOptions): CancelablePromise<any[]>](#emitterwaitforevent-options)
+- [waitFor(event: event | eventNS, options?: WaitForOptions): CancelablePromise<any[]>](#emitterwaitforevent--eventns-options)
 
-- [listenTo(target: GeneralEventEmitter, event: event | eventNS, options?: ListenToOptions): this](#listentotargetemitter-events-string-options)
+- [listenTo(target: GeneralEventEmitter, event: event | eventNS, options?: ListenToOptions): this](#listentotargetemitter-events-objectevent--eventns-function-options)
 
-- [listenTo(target: GeneralEventEmitter, events: (event | eventNS)[], options?: ListenToOptions): this](#listentotargetemitter-events-string-options)
+- [listenTo(target: GeneralEventEmitter, events: (event | eventNS)[], options?: ListenToOptions): this](#listentotargetemitter-events-event--eventns-options)
 
-- [listenTo(target: GeneralEventEmitter, events: Object<event | eventNS, Function>, options?: ListenToOptions): this](#listentotargetemitter-events-string-options)
+- [listenTo(target: GeneralEventEmitter, events: Object<event | eventNS, Function>, options?: ListenToOptions): this](#listentotargetemitter-events-objectevent--eventns-function-options)
 
-- [stopListening(target?: GeneralEventEmitter, event?: event | eventNS): Boolean](#stoplisteningtarget-object-event-string-boolean)
+- [stopListening(target?: GeneralEventEmitter, event?: event | eventNS): Boolean](#stoplisteningtarget-object-event-event--eventns-boolean)
 
-- [hasListeners(event?: event | eventNS): Boolean](#haslistenerseventstringboolean)
+- [hasListeners(event?: event | eventNS): Boolean](#haslistenersevent--eventnsstringboolean)
 
 ### static:
 
-- [static once(emitter: EventEmitter2, event: string | symbol, options?: OnceOptions): CancelablePromise<any[]>](#eventemitter2onceemitter-name-options)
+- [static once(emitter: EventEmitter2, event: string | symbol, options?: OnceOptions): CancelablePromise<any[]>](#eventemitter2onceemitter-event--eventns-options)
 
 - [static defaultMaxListeners: number](#eventemitter2defaultmaxlisteners)
 
